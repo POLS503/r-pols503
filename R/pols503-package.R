@@ -73,3 +73,31 @@ equicor <- function(n, rho) {
   diag(ret) <- rep(1, n)
   ret
 }
+
+#' Find regression standard error to produce a given R-squared
+#'
+#' @description For a normal linear model, given a sample X and population beta,
+#' find the regression standard deviation to produce the desired R-squared.
+#'
+#' @param X The sample design matrix
+#' @param b The population coefficients for X
+#' @param r2 The desired R^2
+#' @return The regression standard deviation to produce that R^2.
+#' @export
+r2_to_sigma <- function(X, b, r2) {
+  n <- nrow(X)
+  k <- ncol(X)
+  yhat <- X %*% b
+  # Var(Y) = E(Var(Y|X)) + Var(E(Y|X))
+  ybar <- mean(yhat)
+  # Model sum of squares
+  ssm <- sum((yhat - ybar) ^ 2)
+  # calc sum of squared errors
+  sse <- (1 - r2) / r2 * ssm
+  # R^2 = 1 - SSE / (SSM + SSE)
+  # (1 - R^2) * (SSM + SSE) = SSE
+  # (1 - R^2) * SSM = SSE - (1 - R^2) * SSE
+  # ((1 - R^2) * SSM) / R^2 = SSE
+  # return sigma (assume population n)
+  sqrt(sse / n)
+}
