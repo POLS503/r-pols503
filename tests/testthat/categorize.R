@@ -1,4 +1,3 @@
-library("pols503")
 library("dplyr")
 context("categorize")
 

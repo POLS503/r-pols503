@@ -1,4 +1,3 @@
-library("pols503")
 context("from_dummies")
 
 example_df <- data.frame(a = c(1, 0, 0, 1), b = c(0, 1, 0, 1))

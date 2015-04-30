@@ -1,4 +1,3 @@
-library("pols503")
 context("sdcov2cor")
 
 test_that("sdcov2cor works", {
