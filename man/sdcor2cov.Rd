@@ -4,7 +4,7 @@
 \alias{sdcor2cov}
 \title{Create covariance matrix from standard deviations and correlation matrix}
 \usage{
-sdcor2cov(sd, cor = diag(length(sd)))
+sdcor2cov(sd, cor = diag(1, nrow = length(sd), ncol = length(sd)))
 }
 \arguments{
 \item{sd}{\code{numeric} A vector of standard deviations}

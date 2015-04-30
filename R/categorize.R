@@ -65,3 +65,24 @@ categorize_.data.frame <- function(data, col, dots, default) {
 categorize_.tbl_df <- function(data, col, dots, default) {
   dplyr::tbl_df(NextMethod())
 }
+
+## An alternative implementation of categorize
+# .categorize_one__ <- function(data, conditions, default) {
+#   ret <- as.character(lazyeval::lazy_eval(default, data))
+#   # Cannot use names directly, otherwise duplicate names don't work.
+#   for (i in seq_along(conditions)) {
+#     # Check if expr is truel
+#     if (as.logical(lazyeval::lazy_eval(conditions[[i]], data))) {
+#       ret <- names(conditions)[i]
+#       break
+#     }
+#   }
+#   ret
+# }
+# .categorize__ <- function(data, col, dots, default) {
+#   conditions <- lazyeval::auto_name(lazyeval::as.lazy_dots(dots))
+#   ret <- rowwise(data) %>%
+#     do_(col = .categorize_one__(., conditions, default))
+#   ret[["x"]] <- col
+#   ret
+# }
