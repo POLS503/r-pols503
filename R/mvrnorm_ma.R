@@ -4,7 +4,11 @@
 #' Produces one or more samples from the specified multivariate normal distribution,
 #' in which the errors are MA(q).
 #'
-#' @inheritParams MASS::mvrnorm
+#' @param n the number of samples required.
+#' @param mu	a vector giving the means of the variables.
+#' @param Sigma	a positive-definite symmetric matrix specifying the covariance matrix of the variables.
+#' @param tol	tolerance (relative to largest variance) for numerical lack of positive-definiteness in Sigma.
+#' @param empirical	logical. If true, mu and Sigma specify the empirical not population mean and covariance matrix.
 #' @param rho A numeric vector of MA coeficients.
 #' @return A matrix
 #' @export
