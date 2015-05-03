@@ -2,21 +2,29 @@
 % Please edit documentation in R/dummies.R
 \name{from_dummies}
 \alias{from_dummies}
+\alias{from_dummies_}
 \title{Convert dummy variable columns to a categorical variable column}
 \usage{
-from_dummies(.data, col, from, default = NA_character_, remove = TRUE)
+from_dummies(.data, col, ..., default = NA_character_, remove = TRUE)
+
+from_dummies_(.data, col, ..., .dots, default = NA_character_,
+  remove = TRUE)
 }
 \arguments{
 \item{.data}{A data frame}
 
 \item{col}{The bare column name which will be created.}
 
-\item{from}{The columns which contain the dummy variables.}
+\item{...}{Comma separated list of unquoted expressions.
+You can treat variable names like they are positions.
+Use positive values to select variables; use negative values to drop variables.}
 
 \item{default}{The value to use if no dummy variables match.}
 
 \item{remove}{If \code{TRUE}, then remove the input column from the output
 data frame.}
+
+\item{.dots}{Use \code{from_dummies_()} to do standard evaluation.}
 }
 \value{
 A data frame.
@@ -24,11 +32,12 @@ A data frame.
 \description{
 \code{from_dummies} converts dummy variable columns to a categorical variable
 column.
+\code{from_dummies_} is the standard evaluation version.
 }
 \examples{
 example_df <- data.frame(a = c(1, 0, 0), b = c(0, 1, 0))
-from_dummies(example_df, x, c("a", "b"))
-from_dummies(example_df, x, c("a", "b"), remove = FALSE)
-from_dummies(example_df, x, c("a", "b"), default = "c")
+from_dummies(example_df, x, a, b)
+from_dummies(example_df, x, a, b, remove = FALSE)
+from_dummies(example_df, x, a, b, default = "c")
 }
 

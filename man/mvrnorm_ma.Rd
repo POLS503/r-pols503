@@ -11,16 +11,13 @@ mvrnorm_ma(n = 1, mu, Sigma, rho = 0, tol = 1e-06, empirical = FALSE)
 
 \item{mu}{a vector giving the means of the variables.}
 
-\item{Sigma}{a positive-definite symmetric matrix specifying the
-    covariance matrix of the variables.}
+\item{Sigma}{a positive-definite symmetric matrix specifying the covariance matrix of the variables.}
 
 \item{rho}{A numeric vector of MA coeficients.}
 
-\item{tol}{tolerance (relative to largest variance) for numerical lack
-    of positive-definiteness in \code{Sigma}.}
+\item{tol}{tolerance (relative to largest variance) for numerical lack of positive-definiteness in Sigma.}
 
-\item{empirical}{logical. If true, mu and Sigma specify the empirical
-    not population mean and covariance matrix.}
+\item{empirical}{logical. If true, mu and Sigma specify the empirical not population mean and covariance matrix.}
 }
 \value{
 A matrix

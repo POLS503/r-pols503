@@ -15,6 +15,8 @@ Imports:
   knitr,
   dplyr,
   lazyeval
-Suggests: testthat
+Suggests: testthat,
+  gapminder
 License: GPL-3
 LazyData: true
+VignetteBuilder: knitr

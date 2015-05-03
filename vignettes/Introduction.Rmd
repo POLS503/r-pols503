@@ -1,0 +1,69 @@
+---
+title: "Categorical variable functions"
+author: "Vignette Author"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+The **pols503** package contains a couple functions designed to facilitate data cleaning with categorical variables while using `%>%`.
+
+This vignette uses the following packages:
+```{r message=FALSE}
+library("pols503")
+library("gapminder")
+library("tidyr")
+library("dplyr")
+```
+
+## Dummies
+
+The function `to_dummies` converts a character or factor variable to dummy variables. 
+The function `from_dummies` converts a set of dummy variables to a character vector.
+
+For this example, we will use the `gapminder` data:
+```{r}
+data("gapminder")
+```
+The variable `continent` indicates the continent of each variable. 
+```{r}
+glimpse(gapminder)
+```
+To convert `continent` to a set of dummy variables.
+```{r}
+gapminder2 <- to_dummies(gapminder, continent, sep="_")
+glimpse(gapminder2)
+```
+Intead of a single variable `contintent`, the dataset `gapminder2` contains a set of dummy variables named `gapminder_*`, one for each value of the original variable, `continent`.
+To avoid dropping the original variable, use the argument `remove = FALSE`.
+
+Now that you have a set of dummy variables, perhaps you would like to convert them back to a categorical variable.
+```{r}
+gapminder3 <- from_dummies(gapminder2, continent, matches("^continent_"))
+glimpse(gapminder3)
+```
+Now `gapminder3` contains a character vector containing the names of the dummy vectors.
+The categories of `continent` are all prefixed with "continent_", but this can be cleaned up using functions from **tidyr**:
+```{r}
+gapminder3 %>%
+  separate(continent, c("continent_prefix", "continent")) %>%
+  select(- continent_prefix)
+```
+
+## Categorize
+
+The function `categorize` creates a character vector from a set of logical expressions.
+The following code creates categories for low life expectancy for years 1980 and before, and years after 1980, with the default category being "high lifeExp"
+```{r}
+categorize(gapminder, lifeExpCat,
+           "low lifeExp, pre 1980" = year <= 1980 & lifeExp < 55,
+            "low lifeExp, pre 1980" = year > 1980 & lifeExp < 60,
+           .default = "high lifeExp") %>%
+  glimpse()
+```
+
+
+

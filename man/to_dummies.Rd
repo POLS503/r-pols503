@@ -2,9 +2,13 @@
 % Please edit documentation in R/dummies.R
 \name{to_dummies}
 \alias{to_dummies}
+\alias{to_dummies_}
 \title{Convert column to dummy variables}
 \usage{
 to_dummies(.data, col, contrasts = NULL, remove = TRUE,
+  drop_level = FALSE, sep = "_")
+
+to_dummies_(.data, col, contrasts = NULL, remove = TRUE,
   drop_level = FALSE, sep = "_")
 }
 \arguments{
@@ -30,6 +34,7 @@ A data frame.
 }
 \description{
 \code{to_dummies} converts a column into multiple columns of dummy variables.
+\code{to_dummies_} is the standard evaluation version of this function.
 }
 \examples{
 example_df <- data.frame(x = c(rep("a", 2), rep("b", 2)))

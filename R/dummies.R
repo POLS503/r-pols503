@@ -1,6 +1,7 @@
 #' Convert column to dummy variables
 #'
 #' \code{to_dummies} converts a column into multiple columns of dummy variables.
+#' \code{to_dummies_} is the standard evaluation version of this function.
 #'
 #' @param .data A data frame
 #' @param col The bare column name
@@ -28,11 +29,7 @@ to_dummies <- function(.data, col,
               drop_level = drop_level, sep = sep)
 }
 
-#' Standard evaluation version of \code{to_dummies}.
-#'
-#' This is an S3 generic.
-#'
-#' @inheritParams to_dummies
+#' @rdname to_dummies
 #' @export
 to_dummies_ <- function(.data, col,
                         contrasts = NULL,
@@ -59,18 +56,16 @@ to_dummies_.data.frame <- function(.data, col,
   if (! is.null(contrasts)) {
     contrasts(vals[[col]]) <- contrasts
   }
-  if (drop_level) {
-    f <- formula("~ x")
-  } else {
-    f <- formula("~ x - 1")
-  }
+  f <- as.formula(paste("~", col, if(drop_level) "" else "- 1" ))
   dummies <- data.frame(model.matrix(f, data = vals),
                         check.rows = FALSE,
                         check.names = FALSE, stringsAsFactors = FALSE)
   if (drop_level) {
     dummies[[1L]] <- NULL
   }
-  colnames(dummies) <- gsub("^x", paste0(col, sep), colnames(dummies))
+  colnames(dummies) <- gsub(paste0("^(", col, ")(.*)$"),
+                            paste0("\\1", sep[1], "\\2"),
+                            colnames(dummies))
   .data <- append_df(.data, dummies)
   if (remove) {
     .data[[col]] <- NULL
@@ -89,40 +84,44 @@ which_w_default <- function(x, y, default = NA) {
 #'
 #' \code{from_dummies} converts dummy variable columns to a categorical variable
 #' column.
+#' \code{from_dummies_} is the standard evaluation version.
 #'
 #' @param .data A data frame
 #' @param col The bare column name which will be created.
-#' @param from The columns which contain the dummy variables.
+#' @param ...  Comma separated list of unquoted expressions.
+#'   You can treat variable names like they are positions.
+#'   Use positive values to select variables; use negative values to drop variables.
+#' @param .dots	Use \code{from_dummies_()} to do standard evaluation.
 #' @param remove If \code{TRUE}, then remove the input column from the output
 #'   data frame.
 #' @param default The value to use if no dummy variables match.
 #' @return A data frame.
 #' @examples
 #' example_df <- data.frame(a = c(1, 0, 0), b = c(0, 1, 0))
-#' from_dummies(example_df, x, c("a", "b"))
-#' from_dummies(example_df, x, c("a", "b"), remove = FALSE)
-#' from_dummies(example_df, x, c("a", "b"), default = "c")
+#' from_dummies(example_df, x, a, b)
+#' from_dummies(example_df, x, a, b, remove = FALSE)
+#' from_dummies(example_df, x, a, b, default = "c")
+#' @rdname from_dummies
 #' @export
-from_dummies <- function(.data, col, from, default = NA_character_,
+from_dummies <- function(.data, col, ..., default = NA_character_,
                          remove = TRUE) {
   col <- col_name(substitute(col))
-  from_dummies_(.data, col, from, default = default, remove = remove)
+  from_dummies_(.data, col, .dots = lazyeval::lazy_dots(...),
+                default = default, remove = remove)
 }
 
-#' Standard evaluation version of \code{from_dummies}.
-#'
-#' This is an S3 generic.
-#'
-#' @inheritParams from_dummies
+#' @rdname from_dummies
 #' @export
-from_dummies_ <- function(.data, col, from, default = NA_character_,
+from_dummies_ <- function(.data, col, ..., .dots, default = NA_character_,
                           remove = TRUE) {
   UseMethod("from_dummies_")
 }
 
-from_dummies_.data.frame <- function(.data, col, from, default = NA_character_,
-                                      remove = TRUE) {
+from_dummies_.data.frame <- function(.data, col, ..., .dots,
+                                     default = NA_character_, remove = TRUE) {
   stopifnot(is.character(col), length(col) == 1)
+  dots <- lazyeval::all_dots(.dots, ...)
+  from <- select_vars_(names(.data), dots)
   catvar <-
     apply(.data[ , from, drop = FALSE], 1,
           function(x) which_w_default(from, x, default = default))
