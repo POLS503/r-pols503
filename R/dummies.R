@@ -12,8 +12,6 @@
 #'   data frame.
 #' @param drop_level If \code{TRUE}, then drop a level when creating the variables.
 #'   This is the default for models.
-#' @param sep \code{character} string to use as the separator in the new column
-#'   names.
 #' @return A data frame.
 #' @examples
 #' example_df <- data.frame(x = c(rep("a", 2), rep("b", 2)))
@@ -23,30 +21,33 @@
 #' @export
 to_dummies <- function(.data, col,
                         contrasts = NULL,
-                        remove = TRUE, drop_level = FALSE, sep = "_") {
+                        remove = TRUE, drop_level = FALSE) {
   col <- col_name(substitute(col))
   to_dummies_(.data, col, contrasts = contrasts, remove = remove,
-              drop_level = drop_level, sep = sep)
+              drop_level = drop_level)
 }
 
 #' @rdname to_dummies
 #' @export
 to_dummies_ <- function(.data, col,
                         contrasts = NULL,
-                        remove = TRUE, drop_level = FALSE, sep = "_") {
+                        remove = TRUE, drop_level = FALSE) {
   UseMethod("to_dummies_")
 }
 
 to_dummies_.tbl_df <- function(.data, col,
                                contrasts = NULL,
-                               remove = TRUE, drop_level = FALSE, sep = "_") {
+                               remove = TRUE, drop_level = FALSE) {
   dplyr::tbl_df(NextMethod())
 }
 
 to_dummies_.data.frame <- function(.data, col,
                        contrasts = NULL,
-                       remove = TRUE, drop_level = FALSE, sep = "_") {
+                       remove = TRUE, drop_level = FALSE,
+                       fun_nume = NULL) {
   stopifnot(is.character(col), length(col) == 1)
+  orig_na_action <-
+  on.exit()
   # do this so that the column keeps any factor attributes
   vals <- .data[ , col, drop = FALSE]
   if (! is.factor(vals[[col]])) {
@@ -57,15 +58,13 @@ to_dummies_.data.frame <- function(.data, col,
     contrasts(vals[[col]]) <- contrasts
   }
   f <- as.formula(paste("~", col, if(drop_level) "" else "- 1" ))
-  dummies <- data.frame(model.matrix(f, data = vals),
+  mf <- model.frame(f, data = mf, na.action = na.pass)
+  dummies <- data.frame(model.matrix(mf),
                         check.rows = FALSE,
                         check.names = FALSE, stringsAsFactors = FALSE)
   if (drop_level) {
     dummies[[1L]] <- NULL
   }
-  colnames(dummies) <- gsub(paste0("^(", col, ")(.*)$"),
-                            paste0("\\1", sep[1], "\\2"),
-                            colnames(dummies))
   .data <- append_df(.data, dummies)
   if (remove) {
     .data[[col]] <- NULL

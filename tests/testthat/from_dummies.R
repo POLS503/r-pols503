@@ -33,3 +33,5 @@ test_that("from_dummies_.tbl_df works", {
   expect_equal(colnames(newdf), c("x"))
   expect_equal(newdf$x, c("a", "b", NA, "a"))
 })
+
+

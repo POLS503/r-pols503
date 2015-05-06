@@ -61,3 +61,14 @@ test_that("to_dummies works with factor variable", {
   expect_equal(colnames(df2), c("x.L", "x.Q"))
 })
 
+test_that("to_dummies works with missing variable expected", {
+  .df <- test_df
+  .df$x[1] <- NA
+  df2 <- to_dummies(test_df, "x")
+  expect_equal(colnames(df2),
+               c("y", "x_a", "x_b", "x_c"))
+  expect_equivalent(df2$x_a, c(rep(1, 2), rep(0, 4)))
+  expect_equivalent(df2$x_b, c(rep(0, 2), rep(1, 2), rep(0, 2)))
+  expect_equivalent(df2$x_c, c(rep(0, 4), rep(1, 2)))
+  expect_equivalent(df2$x, NULL)
+})
