@@ -5,13 +5,13 @@
 #'
 #' @param .data A data frame
 #' @param col The bare column name
-#' @param contrasts A character string naming a function or a numeric matrix,
-#'   to be used as a replacement value for the \code{\link{contrasts}} replacement
-#'   function.
 #' @param remove If \code{TRUE}, then remove the input column from the output
 #'   data frame.
 #' @param drop_level If \code{TRUE}, then drop a level when creating the variables.
 #'   This is the default for models.
+#' @param vars A \code{character} vector with the names of the new variables,
+#'   or a function with two arguments, the column name and the factor levels, which
+#'   returns a character vector of new variable names.
 #' @return A data frame.
 #' @examples
 #' example_df <- data.frame(x = c(rep("a", 2), rep("b", 2)))
@@ -20,52 +20,73 @@
 #' to_dummies(example_df, x, drop_level = TRUE)
 #' @export
 to_dummies <- function(.data, col,
-                        contrasts = NULL,
-                        remove = TRUE, drop_level = FALSE) {
+                       remove = TRUE, drop_level = FALSE,
+                       vars = NULL) {
   col <- col_name(substitute(col))
-  to_dummies_(.data, col, contrasts = contrasts, remove = remove,
+  to_dummies_(.data, col, remove = remove,
               drop_level = drop_level)
 }
 
 #' @rdname to_dummies
 #' @export
 to_dummies_ <- function(.data, col,
-                        contrasts = NULL,
-                        remove = TRUE, drop_level = FALSE) {
+                        remove = TRUE, drop_level = FALSE,
+                        vars = NULL) {
   UseMethod("to_dummies_")
 }
 
 to_dummies_.tbl_df <- function(.data, col,
-                               contrasts = NULL,
-                               remove = TRUE, drop_level = FALSE) {
+                               remove = TRUE, drop_level = FALSE,
+                               vars = NULL) {
   dplyr::tbl_df(NextMethod())
 }
 
+has_attr <- function(x, which) {
+  ! is.null(attr(x, which))
+}
+
+fill_na <- function(x, fill = 0) {
+  x[is.na(x)] <- fill
+  x
+}
+
 to_dummies_.data.frame <- function(.data, col,
-                       contrasts = NULL,
-                       remove = TRUE, drop_level = FALSE,
-                       fun_nume = NULL) {
+                                   drop_level = FALSE,
+                                   remove = TRUE,
+                                   vars = NULL,
+                                   na_level = FALSE,
+                                   na_varname = NULL) {
   stopifnot(is.character(col), length(col) == 1)
-  orig_na_action <-
-  on.exit()
   # do this so that the column keeps any factor attributes
-  vals <- .data[ , col, drop = FALSE]
-  if (! is.factor(vals[[col]])) {
-    vals[[col]] <- as.factor(as.character(vals[[col]]))
+  if (! is.factor(.data[[col]])) {
+    .data[[col]] <- as.factor(as.character(.dat[[col]]))
   }
-  # Override default contrasts
-  if (! is.null(contrasts)) {
-    contrasts(vals[[col]]) <- contrasts
+  cntr <- contrasts(.data[[col]], contrasts = drop_level)
+  if (!is.null(vars)) {
+    if (is.function(vars)) {
+      var_names <- vars(col, lvl)
+    } else {
+      var_names <- as.character(vars)
+    }
+  } else {
+    var_names <- paste0(col, lvl)
   }
-  f <- as.formula(paste("~", col, if(drop_level) "" else "- 1" ))
-  mf <- model.frame(f, data = mf, na.action = na.pass)
-  dummies <- data.frame(model.matrix(mf),
-                        check.rows = FALSE,
-                        check.names = FALSE, stringsAsFactors = FALSE)
-  if (drop_level) {
-    dummies[[1L]] <- NULL
+  if (! na_level) {
+    if (!is.null(na_varname)) {
+      if (is.function(na_varname)) {
+        na_x <- na_varname(col)
+      } else {
+        na_x <- as.character(na_varname)
+      }
+    } else {
+      na_x <- paste0(col, NA)
+    }
   }
-  .data <- append_df(.data, dummies)
+  # what if contrasts don't have rownames
+  for (i in seq_len(ncol(cntr))) {
+    newname <- var_names[i]
+    .data[[newname]] <- cntr[as.character(.data[[col]]), i]
+  }
   if (remove) {
     .data[[col]] <- NULL
   }
