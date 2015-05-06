@@ -54,22 +54,35 @@ to_dummies_.data.frame <- function(.data, col,
                                    drop_level = FALSE,
                                    remove = TRUE,
                                    vars = NULL,
+                                   contr = NULL,
                                    na_level = FALSE,
                                    na_varname = NULL) {
   stopifnot(is.character(col), length(col) == 1)
   # do this so that the column keeps any factor attributes
   if (! is.factor(.data[[col]])) {
-    .data[[col]] <- as.factor(as.character(.dat[[col]]))
+    x <- as.factor(as.character(.data[[col]]))
+  } else {
+    x <- .data[[col]]
   }
-  cntr <- contrasts(.data[[col]], contrasts = drop_level)
+  xlvls <- levels(x)
+  if (is.null(contr)) {
+    if (! has_attr(x, "contrasts")) {
+      contr <- contr.treatment(xlvls, contrasts = drop_level)
+    } else {
+      contr <- attr(x, "contrasts")
+    }
+  }
+  if (is.null(rownames(contr))) {
+    rownames(cntr) <- xlvls
+  }
   if (!is.null(vars)) {
     if (is.function(vars)) {
-      var_names <- vars(col, lvl)
+      var_names <- vars(col, xlvls)
     } else {
       var_names <- as.character(vars)
     }
   } else {
-    var_names <- paste0(col, lvl)
+    var_names <- paste0(col, xlvls)
   }
   if (! na_level) {
     if (!is.null(na_varname)) {
@@ -82,10 +95,9 @@ to_dummies_.data.frame <- function(.data, col,
       na_x <- paste0(col, NA)
     }
   }
-  # what if contrasts don't have rownames
   for (i in seq_len(ncol(cntr))) {
     newname <- var_names[i]
-    .data[[newname]] <- cntr[as.character(.data[[col]]), i]
+    .data[[newname]] <- cntr[as.character(x), i]
   }
   if (remove) {
     .data[[col]] <- NULL
