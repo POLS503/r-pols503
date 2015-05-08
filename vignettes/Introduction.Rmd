@@ -34,7 +34,7 @@ glimpse(gapminder)
 ```
 To convert `continent` to a set of dummy variables.
 ```{r}
-gapminder2 <- to_dummies(gapminder, continent, sep="_")
+gapminder2 <- to_dummies(gapminder, continent)
 glimpse(gapminder2)
 ```
 Intead of a single variable `contintent`, the dataset `gapminder2` contains a set of dummy variables named `gapminder_*`, one for each value of the original variable, `continent`.
@@ -42,14 +42,14 @@ To avoid dropping the original variable, use the argument `remove = FALSE`.
 
 Now that you have a set of dummy variables, perhaps you would like to convert them back to a categorical variable.
 ```{r}
-gapminder3 <- from_dummies(gapminder2, continent, matches("^continent_"))
+gapminder3 <- from_dummies(gapminder2, continent, matches("^continent"))
 glimpse(gapminder3)
 ```
 Now `gapminder3` contains a character vector containing the names of the dummy vectors.
 The categories of `continent` are all prefixed with "continent_", but this can be cleaned up using functions from **tidyr**:
 ```{r}
 gapminder3 %>%
-  separate(continent, c("continent_prefix", "continent")) %>%
+  separate(continent, c("continent_prefix", "continent"), sep = 9) %>%
   select(- continent_prefix)
 ```
 

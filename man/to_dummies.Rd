@@ -5,20 +5,14 @@
 \alias{to_dummies_}
 \title{Convert column to dummy variables}
 \usage{
-to_dummies(.data, col, contrasts = NULL, remove = TRUE,
-  drop_level = FALSE, sep = "_")
+to_dummies(.data, col, remove = TRUE, drop_level = FALSE, vars = NULL)
 
-to_dummies_(.data, col, contrasts = NULL, remove = TRUE,
-  drop_level = FALSE, sep = "_")
+to_dummies_(.data, col, remove = TRUE, drop_level = FALSE, vars = NULL)
 }
 \arguments{
 \item{.data}{A data frame}
 
 \item{col}{The bare column name}
-
-\item{contrasts}{A character string naming a function or a numeric matrix,
-to be used as a replacement value for the \code{\link{contrasts}} replacement
-function.}
 
 \item{remove}{If \code{TRUE}, then remove the input column from the output
 data frame.}
@@ -26,8 +20,9 @@ data frame.}
 \item{drop_level}{If \code{TRUE}, then drop a level when creating the variables.
 This is the default for models.}
 
-\item{sep}{\code{character} string to use as the separator in the new column
-names.}
+\item{vars}{A \code{character} vector with the names of the new variables,
+or a function with two arguments, the column name and the factor levels, which
+returns a character vector of new variable names.}
 }
 \value{
 A data frame.

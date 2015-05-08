@@ -73,7 +73,7 @@ to_dummies_.data.frame <- function(.data, col,
     }
   }
   if (is.null(rownames(contr))) {
-    rownames(cntr) <- xlvls
+    rownames(contr) <- xlvls
   }
   if (!is.null(vars)) {
     if (is.function(vars)) {
@@ -95,9 +95,9 @@ to_dummies_.data.frame <- function(.data, col,
       na_x <- paste0(col, NA)
     }
   }
-  for (i in seq_len(ncol(cntr))) {
+  for (i in seq_len(ncol(contr))) {
     newname <- var_names[i]
-    .data[[newname]] <- cntr[as.character(x), i]
+    .data[[newname]] <- contr[as.character(x), i]
   }
   if (remove) {
     .data[[col]] <- NULL
@@ -169,4 +169,30 @@ from_dummies_.data.frame <- function(.data, col, ..., .dots,
 from_dummies_.tbl_df <- function(.data, col, from, default = NA_character_,
                                  remove = TRUE) {
   dplyr::tbl_df(NextMethod())
+}
+
+
+#' Transform a data frame using a formula
+#'
+#' This uses \code{model.matrix} formula to transform a data frame.
+#'
+#' @param .data A data frame
+#' @param formula A formula
+#' @param append Add columns to \code{.data}. If \code{FALSE}, then return a new
+#'   data frame.
+#' @param na.action The \code{\link{na.action}} to use when creating the \code{model.matrix}.
+#' @return A data frame with the transformations specified in the formula.
+#' @export
+model_df <- function(.data, formula, append = FALSE, na.action = "na.pass") {
+  orig_na_action <- getOption("na.action")
+  on.exit(options(na.action = orig_na_action))
+  options(na.action = na.action)
+  df <- as.data.frame(model.matrix(formula, data = .data))
+  if (append) {
+    for (i in names(df)) {
+      .data[[i]] <- df[[i]]
+    }
+    df <- .data
+  }
+  df
 }
